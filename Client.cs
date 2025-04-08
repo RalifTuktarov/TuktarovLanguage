@@ -76,7 +76,7 @@ namespace TuktarovLanguage
 
                 if (datelist.Any())
                 {
-                    return datelist.First().StartTime.ToString("yyyy-MM-dd"); // Форматируете дату по необходимости
+                    return datelist.First().StartTime.ToString("dd.MM.yyyy"); // Форматируете дату по необходимости
                 }
                 else
                 {
@@ -84,7 +84,24 @@ namespace TuktarovLanguage
                 }
             }
         }
-        
+        public DateTime LastDateTimeV
+        {
+            get
+            {
+                var datelist = ClientService.Where(p => p.ClientID == this.ID)
+                                            .OrderByDescending(p => p.StartTime)
+                                            .ToList();
+
+                if (datelist.Any())
+                {
+                    return datelist.First().StartTime;
+                }
+                else
+                {
+                    return DateTime.MinValue;
+                }
+            }
+        }
         public string GenderName
         {
             get

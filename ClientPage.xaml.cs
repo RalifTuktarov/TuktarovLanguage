@@ -20,6 +20,8 @@ namespace TuktarovLanguage
     /// </summary>
     public partial class ClientPage : Page
     {
+        int itemsPerPage = 10; // Количество клиентов на одной странице
+        int currentPage = 1; // Текущая страница (можно менять в зависимости от запроса)
         int CountRecords;
         int CountPage;
         int CurrentPage = 0;
@@ -31,17 +33,29 @@ namespace TuktarovLanguage
         {
             InitializeComponent();
             var currentClients = TuktarovLanguageEntities.GetContext().Client.ToList();
+            var currentClientServices = TuktarovLanguageEntities.GetContext().ClientService.ToList();
+            for (int i = 0; i < currentClientServices.Count; i++)
+            {
+
+            }
             ClientListView.ItemsSource = currentClients;
             UpdateClient();
+            ComboType.SelectedIndex = 0;
         }
         private void UpdateClient()
         {
             var CurrentClient = TuktarovLanguageEntities.GetContext().Client.ToList();
-            CurrentClient = CurrentClient.Where(p => p.FirstName.ToLower().Contains(TBoxSear4.Text.ToLower())).ToList();
-            string searchText = TBoxSear4.Text.ToLower();
-            CurrentClient = CurrentClient.Where(p => p.FirstName.Replace(" ", "").ToLower().Contains(searchText) || p.LastName.Replace(" ", "").ToLower().Contains(searchText) || p.Patronymic.Replace(" ", "").ToLower().Contains(searchText)
-).ToList();
-            
+
+            string searchText = TBoxSear4.Text.ToLower().Replace(" ", "");
+
+            // Фильтрация списка клиентов
+            CurrentClient = CurrentClient.Where(p =>
+                p.FirstName.Replace(" ", "").ToLower().Contains(searchText) ||
+                p.LastName.Replace(" ", "").ToLower().Contains(searchText) ||
+                p.Patronymic.Replace(" ", "").ToLower().Contains(searchText) ||
+                (p.Phone != null && p.Phone.Replace(" ", "").Replace("(", "").Replace("-", "").Replace(")", "").ToLower().Contains(searchText)) ||
+                (p.Email != null && p.Email.Replace(" ", "").ToLower().Contains(searchText))
+            ).ToList();
             if (Combobox.SelectedIndex == 0)
             {
                 CurrentClient = CurrentClient.Where(p =>
@@ -64,11 +78,11 @@ namespace TuktarovLanguage
 
             if (Combopoisk.SelectedIndex == 2)
             {
-                CurrentClient = CurrentClient.OrderBy(p => p.RegistrationDate).ToList();
+                CurrentClient = CurrentClient.OrderByDescending(p => p.LastDateTimeV).ToList();
             }
             if (Combopoisk.SelectedIndex == 3)
             {
-                CurrentClient = CurrentClient.OrderBy(p => p.VisitCount).ToList();
+                CurrentClient = CurrentClient.OrderByDescending(p => p.VisitCount).ToList();
             }
             ClientListView.ItemsSource = CurrentClient.ToList();
             ClientListView.ItemsSource = CurrentClient;
@@ -78,6 +92,7 @@ namespace TuktarovLanguage
 
         private void ChangePage(int direction, int? selectedPage)
         {
+            var CurrentClient = TuktarovLanguageEntities.GetContext().Client.ToList();
             CurrentPageList.Clear();
             CountRecords = TableList.Count;
             if (CountRecords % recordsPerPage > 0)
@@ -151,12 +166,14 @@ namespace TuktarovLanguage
                     PageListBox.Items.Add(i);
                 }
                 PageListBox.SelectedIndex = CurrentPage;
-
+                int totalClients = CurrentClient.Count;
                 min = CurrentPage * recordsPerPage + recordsPerPage < CountRecords ? CurrentPage * recordsPerPage + recordsPerPage : CountRecords;
-                TBCount.Text = min.ToString();
-                TBAllRecords.Text = " из " + CountRecords.ToString();
+                TBCount.Text = CountRecords.ToString();
+                TBAllRecords.Text = " из " + totalClients.ToString();
+
                 ClientListView.ItemsSource = CurrentPageList;
                 ClientListView.Items.Refresh();
+                
             }
         }
         private void Order_Click(object sender, RoutedEventArgs e)
@@ -239,6 +256,7 @@ namespace TuktarovLanguage
 
             // Перезагрузка страницы с новым количеством записей
             ChangePage(0, 0);
+            UpdateClient();
         }
 
         private void TBoxSear4_TextChanged(object sender, TextChangedEventArgs e)
@@ -261,7 +279,63 @@ namespace TuktarovLanguage
 
         private void add_Click(object sender, RoutedEventArgs e)
         {
+            Manager.MainFrame.Navigate(new AddEditPage(null));
+        }
 
+        private void Page_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                TuktarovLanguageEntities.GetContext().ChangeTracker.Entries().ToList().ForEach(p => p.Reload());
+                ClientListView.ItemsSource = TuktarovLanguageEntities.GetContext().Client.ToList();
+                
+            }
+            UpdateClient();
+        }
+
+        private void BTNDeleteClient_Click(object sender, RoutedEventArgs e)
+        {
+            var currentClient = (sender as Button).DataContext as Client;
+            var currentClientServices = TuktarovLanguageEntities.GetContext().ClientService.ToList();
+            currentClientServices = currentClientServices.Where(p => p.ClientID == currentClient.ID).ToList();
+
+            if (currentClientServices.Count != 0)
+                MessageBox.Show("Невозможно удалить клиента с посещениями");
+            else
+            {
+
+                if (MessageBox.Show("Вы точно хотите удалить клиента?", "Внимание!", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        TuktarovLanguageEntities.GetContext().Client.Remove(currentClient);
+                        TuktarovLanguageEntities.GetContext().SaveChanges();
+                        ClientListView.ItemsSource = TuktarovLanguageEntities.GetContext().Client.ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message.ToString());
+                    }
+                }
+
+            }
+            UpdateClient();
+        }
+
+        private void BTNEditClient_Click(object sender, RoutedEventArgs e)
+        {
+            Manager.MainFrame.Navigate(new AddEditPage((sender as Button).DataContext as Client));
+            //NavigationService.Navigate(new AddEditPage());
+        }
+
+        private void ClientListView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Visibility == Visibility.Visible)
+            {
+                TuktarovLanguageEntities.GetContext().ChangeTracker.Entries().ToList().ForEach(p => p.Reload());
+                ClientListView.ItemsSource = TuktarovLanguageEntities.GetContext().Client.ToList();
+            }
+            UpdateClient();
         }
     }
 }

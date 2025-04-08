@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:TuktarovLanguage"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="ClientPage" FontFamily="Comic Sans MS">
+      Title="ClientPage" FontFamily="Comic Sans MS" IsVisibleChanged="Page_IsVisibleChanged">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -41,7 +41,7 @@
         </WrapPanel>
         
         
-        <ListView Name="ClientListView" Grid.Row="1">
+        <ListView Name="ClientListView" Grid.Row="1" IsVisibleChanged="ClientListView_IsVisibleChanged">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -59,7 +59,7 @@
                         </Grid.RowDefinitions>
                         <Image Width="170" Grid.Column="0" Stretch="UniformToFill" HorizontalAlignment="Center" Grid.RowSpan="5" Margin="20">
                             <Image.Source>
-                                <Binding Path="PhotoPath"></Binding>
+                                <Binding Path="PhotoPath" TargetNullValue="D:\3 курс\ИСП-3122\Туктаров\TuktarovLanguage\picture.png"></Binding>
                             </Image.Source>
                         </Image>
 
@@ -93,12 +93,13 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
                             <TextBlock Text="Дата последнего посещения:  " FontSize="20"></TextBlock>
-                            <TextBlock Text="{Binding RegistrationDateString}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" FontSize="20"></TextBlock>
+                            <TextBlock Text="{Binding LastVisitDate}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" FontSize="20"></TextBlock>
                             <TextBlock Text="  Кол-во посещений:  " FontSize="20"></TextBlock>
                             <TextBlock Text="{Binding VisitCount}" FontSize="20"/>
                         </StackPanel>
-                        <Button Name="YdalitCLT" Content="Удалить" Height="30" Width="175" Grid.Column="2" Grid.RowSpan="5" HorizontalAlignment="Right" Background="#FF04A0FF"
-                            Click="YdalitCLT_Click"></Button>
+                        <Button Name="BTNDeleteClient" Content="Удалить" Click="BTNDeleteClient_Click" Grid.Column="2" Grid.Row="2"></Button>
+                        <Button Name="BTNEditClient" Content="Редактировать" Click="BTNEditClient_Click" Grid.Column="2" Grid.Row="3"></Button>
+                        
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

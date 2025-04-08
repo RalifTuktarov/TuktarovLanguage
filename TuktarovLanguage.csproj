@@ -176,9 +176,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="school_logo.ico" />
-    <Resource Include="school_logo.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Клиенты\school_logo.png" />
+    <Resource Include="Клиенты\picture.png" />
+    <Resource Include="school_logo.png" />
     <Content Include="TuktarovModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TuktarovModel.Context.cs</LastGenOutput>
